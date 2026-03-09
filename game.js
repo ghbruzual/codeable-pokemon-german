@@ -61,7 +61,7 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
       Game.goodbye();
     } else if (trainerName === "") {
       alert(`Before to continue, we need to know, who are you?`);
-      Game.nameInfo();
+      return Game.nameInfo();
     } else {
       return trainerName;
     }
@@ -80,7 +80,7 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
       Game.goodbye();
     } else if (selectedPokemon === "") {
       alert(`Before to continue, we need to know, what Pokemon do you prefer?`);
-      Game.pickAPokemon();
+      return Game.pickAPokemon();
     } else {
       alert(`Excelent you pick a ${selectedPokemon}`);
       return selectedPokemon;
