@@ -13,7 +13,7 @@ class Player {
       );
 
       if (selection === null) {
-        console.log(`${this.name} wants to run this time!.`);
+        console.log(`${this.name} run away!`);
         return true;
       }
 
