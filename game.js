@@ -9,9 +9,10 @@ class Game {
     await Game.countdown();
 
     const info = Game.welcome();
-    if (!info) return; 
+    if (!info) return;
     const [name, species, nickname] = info;
     this.player = new Player(name, species, nickname);
+    this.menu();
   }
 
   static async countdown() {
@@ -34,7 +35,7 @@ This world is inhabited by creatures calles Pokemon! for some people, Pokemons a
 Myself... I study Pokemon as a profession.`);
 
     let trainerName = Game.nameInfo();
-    if (trainerName === undefined) return;
+    if (trainerName === null) return;
     alert(`Very Good, so your name is ${trainerName}, nice to meet you.
   
 Your very own POKEMON legend is about to unfold! A world of dreams and adventures with POKEMON awaits! Let´s go!
@@ -44,21 +45,62 @@ Here, ${trainerName} there are 3 POKEMON here!
 When I was young, I was a serious POKEMON trainer. In my old age, I have only 3 left, but you can have one!`);
     playerInfo.push(trainerName);
     let selectedPokemon = Game.pickAPokemon();
+    if (selectedPokemon === null) return;
     playerInfo.push(selectedPokemon);
     let pokemonName = prompt(`You can name your pokemon:`, selectedPokemon);
-    alert(`${trainerName}, raise your young ${pokemonName} by making it fight!
+    if (pokemonName === null) {
+      Game.goodbye();
+      return null;
+    }
+    alert(`${trainerName}, raise your young ${pokemonName === "" ? "pokemon" : pokemonName} by making it fight!
           
 When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
     playerInfo.push(pokemonName);
     return playerInfo;
   }
 
+  menu() {
+    let menu = prompt(`what do you want to do next?
+Train
+Stats
+Leader`);
+    if (menu === null) {
+      Game.goodbye();
+      return null;
+    } else if (menu === "Train") {
+    } else if (menu === "Stats") {
+      this.showStats();
+      return this.menu();
+    } else if (menu === "Leader") {
+    } else {
+      alert(`invalid Option!`);
+      return this.menu();
+    }
+  }
+
+  static train() {
+    let opponent = new Bot()
+
+    alert(`Do you want to fight?`)
+    console.log(`${this.player.name} challenges ${opponent.name} for training`)
+    console.log(`${opponent.name} has a ${opponent.pokeName} level ${opponent.level}`)
+  }
+
+  showStats() {
+    console.table(this.player.pokemon.stats);
+  }
+
+  static goodbye() {
+    console.log(`Thanks for playing Pokemon Yellow`);
+    console.log(`This game was created with love by: German`);
+  }
   static nameInfo() {
     let optionalName = "Ash";
     let trainerName;
-    trainerName = prompt("Cual es tu nombre entrenador", optionalName);
+    trainerName = prompt("What is yuor name trainer?", optionalName);
     if (trainerName === null) {
       Game.goodbye();
+      return null;
     } else if (trainerName === "") {
       alert(`Before to continue, we need to know, who are you?`);
       return Game.nameInfo();
@@ -78,6 +120,7 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
     );
     if (selectedPokemon === null) {
       Game.goodbye();
+      return null;
     } else if (selectedPokemon === "") {
       alert(`Before to continue, we need to know, what Pokemon do you prefer?`);
       return Game.pickAPokemon();
@@ -86,10 +129,16 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
       return selectedPokemon;
     }
   }
-
-  static goodbye() {
-    console.log(`Thanks for playing Pokemon Yellow`);
-    console.log(`This game was created with love by: German`);
-    return;
+  static getRandomPokemon() {
+    const randomIndex = Math.floor(Math.random() * Pokemons.length);
+    return Pokemons[randomIndex];
+  }
+  static getRandomLevel() {
+    return Math.floor(Math.random() * 5) + 1;
   }
 }
+
+const myGame = new Game();
+
+myGame.start();
+
