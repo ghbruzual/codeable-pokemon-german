@@ -29,40 +29,39 @@ class Pokemon {
       speed: 0,
     };
 
-    this.currentHp = 0;
+    this.currentHp = this.stats.hp;
     this.currentMove = null;
   }
-
   get stats() {
-    let calculatedStats = {};
-    for (let statName in this.baseStats) {
-      const baseStats = this.baseStats[statName];
-      const individualValues = this.individualValues[statName];
-      const effortValues = this.effortValues[statName];
-      const level = this.level;
-      if (statName === "hp") {
-        calculatedStats[statName] =
-          Math.floor(
-            ((2 * baseStats + individualValues + Math.floor(effortValues / 4)) *
-              level) /
-              100,
-          ) +
-          level +
-          10;
+    let calcStats = {};
+    let level = this.level;
+    for (let statsName in this.baseStats) {
+      const baseStat = this.baseStats[statsName];
+      const statIndividualValue = this.individualValues[statsName];
+      const statEffort = Math.floor(this.effortValues[statsName] / 4);
+      if (statsName === "hp") {
+        calcStats[statsName] = Math.floor(
+          ((2 * baseStat + statIndividualValue + statEffort) * level) / 100 +
+            level +
+            10,
+        );
       } else {
-        calculatedStats[statName] =
-          Math.floor(
-            ((2 * baseStats + individualValues + Math.floor(effortValues / 4)) *
-              level) /
-              100,
-          ) + 5;
+        calcStats[statsName] = Math.floor(
+          ((2 * baseStat + statIndividualValue + statEffort) * level) / 100 + 5,
+        );
       }
     }
-    return calculatedStats;
+    return {
+      species: this.species,
+      level: this.level,
+      type: this.type.join(", "),
+      experiencePoints: this.experiencePoints,
+      ...calcStats,
+    };
   }
   expForLevel(level) {
-    let levelUp = ExperienceCurves[this.growthRate];
-    return Math.floor(levelUp(level));
+    let newExperience = ExperienceCurves[this.growthRate];
+    return Math.floor(newExperience(this.level));
   }
   prepareForBattle() {
     this.currentHp = this.stats.hp;
@@ -72,30 +71,34 @@ class Pokemon {
     this.currentHp = Math.max(0, this.currentHp - damage);
   }
   setCurrentMove(move) {
-    this.currentMove = Moves.find((Moves) => Moves.name === move);
+    this.currentMove = Moves.find((m) => m.name === move);
   }
   isFainted() {
     return this.currentHp === 0;
   }
   attack(target) {
     if (!this.moveHits()) {
+      console.log(`${this.pokeName}'s attack missed!`);
       return 0;
     }
 
     const critical = this.isCritical();
-    const damageBase = this.calculateBaseDamage(target);
-    const damageAfterCritical = critical
-      ? Math.floor(damageBase * 1.5)
-      : damageBase;
+    const damage = critical
+      ? Math.floor(this.calculateBaseDamage(target) * 1.5)
+      : this.calculateBaseDamage(target);
 
     const effectiveness = this.calculateEffectiveness(target);
-    const finalDamage = Math.floor(damageAfterCritical * effectiveness);
+    const finalDamage = Math.floor(damage * effectiveness);
 
     target.receiveDamage(finalDamage);
 
     console.log(`${this.pokeName} used ${this.currentMove.name}!`);
     if (critical) console.log("It was a CRITICAL hit!");
-    if (effectiveness === 0 || effectiveness < 1 && effectiveness > 0) console.log(`It's not very effective...`);
+    if (effectiveness > 1) console.log("It's super effective!");
+    if (effectiveness < 1 && effectiveness > 0)
+      console.log("It's not very effective...");
+    if (effectiveness === 0)
+      console.log(`It doesn't affect ${target.pokeName}...`);
 
     return finalDamage;
   }
@@ -104,15 +107,13 @@ class Pokemon {
     return randomBetween(1, 100) <= this.currentMove.accuracy;
   }
   isCritical() {
-    return randomBetween(1, 100) <= 6.25;
+    return randomBetween(1, 16) === 1;
   }
   calculateBaseDamage(target) {
     const level = this.level;
     const movePower = this.currentMove.power;
     const moveType = this.currentMove.type;
-
     const isSpecial = SpecialMoveTypes.includes(moveType);
-
     let offensiveStat, targetDefensiveStat;
 
     if (isSpecial) {
@@ -123,28 +124,27 @@ class Pokemon {
       targetDefensiveStat = target.stats.defense;
     }
 
-    // Aplicar la fórmula con los redondeos (Math.floor) solicitados
-    // Fórmula: floor(floor(floor(2 * level / 5 + 2) * offensiveStat * movePower / targetDefensiveStat) / 50) + 2
+    const finalDamage =
+      Math.floor(
+        Math.floor(
+          (Math.floor((2 * level) / 5.0 + 2) * offensiveStat * movePower) /
+            targetDefensiveStat,
+        ) / 50,
+      ) + 2;
 
-    const step1 = Math.floor((2 * level) / 5 + 2);
-    const step2 = Math.floor(
-      (step1 * offensiveStat * movePower) / targetDefensiveStat,
-    );
-    const finalBaseDamage = Math.floor(step2 / 50) + 2;
-
-    return finalBaseDamage;
+    return finalDamage;
   }
   calculateEffectiveness(target) {
     let multiplier = 1;
     const moveType = this.currentMove.type;
     const targetTypes = target.type;
 
-    const relations = TypeMultiplier[moveType];
+    const validation = TypeMultiplier[moveType];
 
-    if (!relations) return multiplier;
+    if (!validation) return multiplier;
 
     targetTypes.forEach((targetType) => {
-      const value = relations[targetType];
+      const value = validation[targetType];
 
       multiplier *= value !== undefined ? value : 1;
     });
@@ -152,20 +152,23 @@ class Pokemon {
     return multiplier;
   }
   processVictory(target) {
-  const expGanada = Math.floor((target.baseExp * target.level) / 7);
-  this.experiencePoints += expGanada;
-  console.log(`${target.pokeName} FAINTED`);
-  console.log(`${this.pokeName} WINS!`);
-  console.log(`${this.pokeName} gained ${expGanada} experience points`);
-  
-  const statAIncrementar = target.effortPoints.type;
-  const cantidad = target.effortPoints.amount;
-  
-  this.effortValues[statAIncrementar] += cantidad;
+    const experienceWin = Math.floor((target.baseExp * target.level) / 7);
+    this.experiencePoints += experienceWin;
+    console.log(`${target.pokeName} FAINTED`);
+    console.log(`${this.pokeName} WINS!`);
+    console.log(`${this.pokeName} gained ${experienceWin} experience points`);
 
-  while (this.level < 100 && this.experiencePoints >= this.expForLevel(this.level + 1)) {
-    this.level++;
+    const effortTypeIncreased = target.effortPoints.type;
+    const effortAmountIncreased = target.effortPoints.amount;
+
+    this.effortValues[effortTypeIncreased] += effortAmountIncreased;
+
+    while (
+      this.level < 100 &&
+      this.experiencePoints >= this.expForLevel(this.level + 1)
+    ) {
+      this.level++;
+    }
+    console.log(`${this.pokeName} reached level ${this.level}!`);
   }
-  console.log(`${this.pokeName} reached level ${this.level}!`);
-}
 }

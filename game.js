@@ -12,6 +12,7 @@ class Game {
     if (!info) return;
     const [name, species, nickname] = info;
     this.player = new Player(name, species, nickname);
+    this.menu();
   }
 
   static async countdown() {
@@ -58,10 +59,35 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
     return playerInfo;
   }
 
+  menu() {
+    let menu = prompt(`what do you want to do next?
+Train
+Stats
+Leader`);
+    if (menu === null) {
+      Game.goodbye();
+      return null;
+    } else if (menu === "Train") {
+    } else if (menu === "Stats") {
+      this.showStats();
+      return this.menu();
+    } else if (menu === "Leader") {
+    } else {
+      alert(`invalid Option!`);
+      return this.menu();
+    }
+  }
+
   static train() {
-    let Bot = new Pokemon()
-    
+    let opponent = new Bot()
+
     alert(`Do you want to fight?`)
+    console.log(`${this.player.name} challenges ${opponent.name} for training`)
+    console.log(`${opponent.name} has a ${opponent.pokeName} level ${opponent.level}`)
+  }
+
+  showStats() {
+    console.table(this.player.pokemon.stats);
   }
 
   static goodbye() {
@@ -114,9 +140,5 @@ When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
 
 const myGame = new Game();
 
-// myGame.start();
+myGame.start();
 
-
-
-
-console.table(this.stats);
