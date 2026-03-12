@@ -25,7 +25,7 @@ class Battle {
       if (secondAttack.isFainted()) {
         console.log(`${secondAttack.pokeName} FAINTED!`);
         console.log(`${firstAttack.pokeName} WINS!`);
-        firstAttack.processVictory();
+        firstAttack.processVictory(secondAttack);
         break;
       }
 
@@ -33,7 +33,7 @@ class Battle {
       if (firstAttack.isFainted()) {
         console.log(`${firstAttack.pokeName} FAINTED!`);
         console.log(`${secondAttack.pokeName} WINS!`);
-        secondAttack.processVictory();
+        secondAttack.processVictory(firstAttack);
         break;
       }
     }
@@ -77,13 +77,13 @@ ${this.player2.name} sent out ${this.player2.pokemon.pokeName}!`);
         Player: this.player1.name,
         Pokemon: this.player1.pokemon.pokeName,
         Level: this.player1.pokemon.level,
-        HP: `${this.player1.pokemon.currentHp} / ${this.player1.pokemon.stats.hp}`,
+        HP: `${this.player1.pokemon.currentHp}`,
       },
       {
         Player: this.player2.name,
         Pokemon: this.player2.pokemon.pokeName,
         Level: this.player2.pokemon.level,
-        HP: `${this.player2.pokemon.currentHp} / ${this.player2.pokemon.stats.hp}`,
+        HP: `${this.player2.pokemon.currentHp}`,
       },
     ];
     console.table(status);
