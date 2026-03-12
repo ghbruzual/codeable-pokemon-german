@@ -12,7 +12,7 @@ class Game {
     if (!info) return;
     const [name, species, nickname] = info;
     this.player = new Player(name, species, nickname);
-    this.menu();
+    Game.menu(this);
   }
 
   static async countdown() {
@@ -52,47 +52,100 @@ When I was young, I was a serious POKEMON trainer. In my old age, I have only 3 
       Game.goodbye();
       return null;
     }
-    alert(`${trainerName}, raise your young ${pokemonName === "" ? "pokemon" : pokemonName} by making it fight!
+    alert(`${trainerName}, raise your young ${pokemonName === "" ? selectedPokemon : pokemonName} by making it fight!
           
 When you feel ready you can challenge BROCK, the PEWTER´s GYM LEADER`);
     playerInfo.push(pokemonName);
     return playerInfo;
   }
 
-  menu() {
-    let menu = prompt(`what do you want to do next?
-Train
-Stats
-Leader`);
-    if (menu === null) {
-      Game.goodbye();
-      return null;
-    } else if (menu === "Train") {
-    } else if (menu === "Stats") {
-      this.showStats();
-      return this.menu();
-    } else if (menu === "Leader") {
-    } else {
-      alert(`invalid Option!`);
-      return this.menu();
+  static menu(instance) {
+    let continuePlaying = true;
+
+    while (continuePlaying) {
+      let choice = prompt(`What do you want to do next, ${instance.player.name}?
+- Train
+- Stats
+- Leader
+(Click 'Cancel' to Exit)`, "Train");
+
+      if (choice === null) {
+        Game.goodbye();
+        continuePlaying = false;
+        break;
+      }
+
+      let action = choice.trim().toLowerCase();
+
+      if (action === "train") {
+        instance.train();
+      } else if (action === "stats") {
+        instance.showStats();
+      } else if (action === "leader") {
+        instance.challengeLeader();
+      } else {
+        alert("Invalid Option! Please write Train, Stats, or Leader.");
+      }
     }
   }
 
-  static train() {
-    let opponent = new Bot()
+  train() {
+    const randomSpecies = Game.getRandomPokemon();
+    const randomLevel = Game.getRandomLevel();
+    const opponent = new Bot("Random Person", randomSpecies, randomSpecies, randomLevel);
 
-    alert(`Do you want to fight?`)
-    console.log(`${this.player.name} challenges ${opponent.name} for training`)
-    console.log(`${opponent.name} has a ${opponent.pokeName} level ${opponent.level}`)
+    console.log(`${this.player.name} challenges ${opponent.name} for training`);
+    console.log(
+      `${opponent.name} has a ${opponent.pokemon.species} level ${opponent.pokemon.level}`,
+    );
+
+    const wantToFight = confirm(
+      `Do you want to fight against ${opponent.name}?`,
+    );
+    if (wantToFight) {
+      console.log(
+        `${this.player.name} challenges ${opponent.name} to a training match!`,
+      );
+
+      const battle = new Battle(this.player, opponent);
+      battle.start();
+    } else {
+      alert("You managed to avoid the fight.");
+    }
   }
 
   showStats() {
     console.table(this.player.pokemon.stats);
   }
 
+  challengeLeader() {
+    const opponent = new Bot("Brock", "Onix", "Onix", 10);
+
+    console.log(
+      `${this.player.name} challenges Leader ${opponent.name} for a Badge!`,
+    );
+    console.log(
+      `${opponent.name} has an ${opponent.pokemon.species} level ${opponent.pokemon.level}`,
+    );
+
+    const wantToFight = confirm(
+      `Are you ready to face Leader ${opponent.name}?`,
+    );
+
+    if (wantToFight) {
+      console.log(`${this.player.name} is entering the Pewter City Gym!`);
+      const battle = new Battle(this.player, opponent);
+      battle.start();
+    } else {
+      alert("You decided you need more training before facing Brock.");
+    }
+  }
+
   static goodbye() {
     console.log(`Thanks for playing Pokemon Yellow`);
-    console.log(`This game was created with love by: German`);
+    console.log(
+      `This game was created by: NINTENDO and this copy with love by: ghbruzual`,
+    );
   }
   static nameInfo() {
     let optionalName = "Ash";
@@ -130,8 +183,8 @@ Leader`);
     }
   }
   static getRandomPokemon() {
-    const randomIndex = Math.floor(Math.random() * Pokemons.length);
-    return Pokemons[randomIndex];
+    const randomIndex = Math.floor(Math.random() * WikiPk.length);
+    return WikiPk[randomIndex].species;
   }
   static getRandomLevel() {
     return Math.floor(Math.random() * 5) + 1;
@@ -141,4 +194,3 @@ Leader`);
 const myGame = new Game();
 
 myGame.start();
-

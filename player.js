@@ -1,15 +1,15 @@
 class Player {
-  constructor(name) {
+  constructor(name, species, pokeName, level) {
     this.name = name;
     this.pokemon = new Pokemon(species, pokeName, level);
   }
   selectMove() {
-    const availableMoves = this.pokemon.moves.map((move) => move.name);
+    const availableMoves = this.pokemon.moves;
     const movesListString = availableMoves.join("\n");
 
     while (true) {
       let selection = prompt(
-        `pick a move:\n${movesListString}(or cancel to run)`,
+        `pick a move:\n${movesListString}\n(or cancel to run)`, availableMoves[0],
       );
 
       if (selection === null) {
@@ -21,7 +21,6 @@ class Player {
 
       if (availableMoves.includes(selectedMove)) {
         this.pokemon.setCurrentMove(selectedMove);
-        console.log(`${this.name} select ${selectedMove}.`);
         return false;
       }
 

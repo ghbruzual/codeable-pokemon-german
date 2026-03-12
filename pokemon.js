@@ -29,7 +29,7 @@ class Pokemon {
       speed: 0,
     };
 
-    this.currentHp = this.stats.hp;
+    this.currentHp = 0;
     this.currentMove = null;
   }
   get stats() {
@@ -83,16 +83,18 @@ class Pokemon {
     }
 
     const critical = this.isCritical();
-    const damage = critical
-      ? Math.floor(this.calculateBaseDamage(target) * 1.5)
-      : this.calculateBaseDamage(target);
+    const baseDamage = this.calculateBaseDamage(target);
+    const damage = critical ? Math.floor(baseDamage * 1.5) : baseDamage;
 
     const effectiveness = this.calculateEffectiveness(target);
     const finalDamage = Math.floor(damage * effectiveness);
-
     target.receiveDamage(finalDamage);
 
-    console.log(`${this.pokeName} used ${this.currentMove.name}!`);
+    console.log(
+      `%c${this.pokeName} used ${this.currentMove.name}!`,
+      "font-weight: bold",
+    );
+    console.log(`And it hit ${target.pokeName} with ${finalDamage} damage`);
     if (critical) console.log("It was a CRITICAL hit!");
     if (effectiveness > 1) console.log("It's super effective!");
     if (effectiveness < 1 && effectiveness > 0)
@@ -154,14 +156,13 @@ class Pokemon {
   processVictory(target) {
     const experienceWin = Math.floor((target.baseExp * target.level) / 7);
     this.experiencePoints += experienceWin;
-    console.log(`${target.pokeName} FAINTED`);
-    console.log(`${this.pokeName} WINS!`);
     console.log(`${this.pokeName} gained ${experienceWin} experience points`);
 
     const effortTypeIncreased = target.effortPoints.type;
     const effortAmountIncreased = target.effortPoints.amount;
 
     this.effortValues[effortTypeIncreased] += effortAmountIncreased;
+    let oldLevel = this.level
 
     while (
       this.level < 100 &&
@@ -169,6 +170,9 @@ class Pokemon {
     ) {
       this.level++;
     }
+    if (this.level > oldLevel) {
     console.log(`${this.pokeName} reached level ${this.level}!`);
+    }
+    this.prepareForBattle()
   }
 }
